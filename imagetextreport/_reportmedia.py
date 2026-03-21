@@ -47,7 +47,7 @@ class ReportMediaIterator:
             else None
         )
 
-    def _resolve_reference(self, ref) -> Media | None:
+    def _resolve_reference(self, ref: MediaRef) -> Media | None:
         handle = ref.get_reference_handle()
         return self._database.get_media_from_handle(handle)
 

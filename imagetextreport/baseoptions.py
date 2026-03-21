@@ -1,4 +1,6 @@
-from gramps.gen.const import GRAMPS_LOCALE as glocale
+"""Plugin options for detailed image reports."""
+
+from gramps.gen.const import GRAMPS_LOCALE
 from gramps.gen.plug.docgen import (
     FONT_SANS_SERIF,
     FONT_SERIF,
@@ -9,12 +11,13 @@ from gramps.gen.plug.docgen import (
     TableCellStyle,
     TableStyle,
 )
-from gramps.gen.plug.report import utils as ReportUtils
+from gramps.gen.plug.report.utils import pt2cm
 
-_ = glocale.translation.gettext  # pyright: ignore[reportOptionalMemberAccess]
+_ = GRAMPS_LOCALE.translation.gettext  # pyright: ignore[reportOptionalMemberAccess]
 
 
 def add_image_report_options(default_style: StyleSheet) -> None:
+    """Add image-related options to `default_style`."""
     _add_note_header_option(default_style)
     _add_entry_option(default_style)
     _add_first_entry_option(default_style)
@@ -107,8 +110,8 @@ def _add_table_title_option(default_style: StyleSheet) -> None:
     font.set_italic(1)
     para = ParagraphStyle()
     para.set_font(font)
-    para.set_top_margin(ReportUtils.pt2cm(3))
-    para.set_bottom_margin(ReportUtils.pt2cm(3))
+    para.set_top_margin(pt2cm(3))
+    para.set_bottom_margin(pt2cm(3))
     para.set_description(_("The style used for image labels."))
     default_style.add_paragraph_style("DDRI-TableTitle", para)
 
@@ -124,7 +127,7 @@ def _add_image_caption_center_option(default_style: StyleSheet) -> None:
     para = ParagraphStyle()
     para.set_alignment(PARA_ALIGN_CENTER)
     para.set_font(font)
-    para.set_top_margin(ReportUtils.pt2cm(3))
-    para.set_bottom_margin(ReportUtils.pt2cm(3))
+    para.set_top_margin(pt2cm(3))
+    para.set_bottom_margin(pt2cm(3))
     para.set_description(_("A style used for image captions."))
     default_style.add_paragraph_style("DDRI-ImageCaptionCenter", para)
