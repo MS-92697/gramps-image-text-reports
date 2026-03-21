@@ -1,26 +1,26 @@
 from dataclasses import dataclass
-from functools import partial
 
 from gramps.gen.const import GRAMPS_LOCALE as glocale
-_ = glocale.translation.gettext
-from gramps.gen.plug.menu import (BooleanOption, NumberOption, PersonOption,
-                                  EnumeratedListOption)
 from gramps.gen.plug.docgen import (FontStyle, ParagraphStyle,
                                     TableStyle, TableCellStyle,
                                     FONT_SANS_SERIF, FONT_SERIF,
                                     PARA_ALIGN_CENTER)
 from gramps.gen.plug.report import endnotes
 from gramps.gen.plug.report import utils as ReportUtils
-from gramps.gen.plug.report import MenuReportOptions
-from gramps.gen.plug.report import stdoptions
-from gramps.plugins.textreport.detdescendantreport import DetDescendantReport
+from gramps.plugins.textreport.detdescendantreport import (
+    DetDescendantReport,
+    DetDescendantOptions,
+)
 from gramps.gen.lib import Citation, Media, MediaRef, Note
+
+_ = glocale.translation.gettext
 
 
 class ReportMediaIterator:
-    __slots__ = ["_media_list", "_current_index"]
+    __slots__ = ["_media_list", "_current_index", "_database"]
 
-    def __init__(self, media_list):
+    def __init__(self, database, media_list):
+        self._database = database
         self._media_list = media_list
         self._current_index = 0
 
@@ -43,34 +43,52 @@ class ReportMediaIterator:
     
     def _resolve_at_index(self, index: int) -> Item | None:
         return (self.Item(ref=ref, media=val)
-                if (ref := self._media_list[index].get_reference_handle())
-                and (val := self.database.get_media_from_handle(ref))
+                if (ref := self._media_list[index])
+                and (val := self._database.get_media_from_handle(ref.get_reference_handle()))
                 and (mime := val.get_mime_type()) and mime.startswith("image/")
                 else None)
+    
+
+class ReportMedia(list):
+    def __init__(self, database, media_list):
+        iterator = ReportMediaIterator(database, media_list)
+        super().__init__(iterator)
 
 
-class DetailedDescendantReportI(DetDescendantReport):   
+class ImageDetDescendantReport(DetDescendantReport):   
     def write_report(self):
+        # PLATYPUS check whether this worked and if yes, describe why.
+        # same goes for the other funny override down there.
+        self.inc_sources = False
         parent_result = super().write_report()
+        self.inc_sources = True
         self.write_endnotes_with_media()
         return parent_result
     
+    def write_paragraph(self, text: str, style: str):
+        self.doc.start_paragraph(style)
+        self.doc.write_text(text, mark=None)
+        self.doc.end_paragraph()
+    
     def write_images(self, media_list):
+        if not (report_media := ReportMedia(self.database, media_list)):
+            return
+
         self.doc.start_table("images","DDRI-GalleryTable")
         self.doc.start_row()
         self.doc.start_cell("DDRI-TableHead", 1)
-        self.write_paragraph(self._('Images'), style='DDRI-TableTitle')
+        self.write_paragraph(self._('Images'), 'DDRI-TableTitle')
         self.doc.end_cell()
         self.doc.end_row()
-        for item in ReportMediaIterator(media_list):
+        for item in report_media:
             description = item.media.get_description()
             self.doc.start_row()
             self.doc.start_cell('DDRI-NormalCell')
-            self.write_paragraph(description, style='DDRI-ImageCaptionCenter')
-            ReportUtils.insert_image(self.database, self.doc, item, self._user,
+            self.write_paragraph(description, 'DDRI-ImageCaptionCenter')
+            ReportUtils.insert_image(self.database, self.doc, item.ref, self._user,
                                      align='single', w_cm=17.0, h_cm=19.0)
             self.do_attributes(item.media.get_attribute_list() +
-                               item.get_attribute_list() )
+                               item.ref.get_attribute_list() )
             self.write_media_notes(item.media)
             self.doc.end_cell()
             self.doc.end_row()
@@ -78,6 +96,32 @@ class DetailedDescendantReportI(DetDescendantReport):
         self.doc.start_paragraph('DDRI-NoteHeader')
         self.doc.end_paragraph()
         self.doc.page_break()
+
+    def do_attributes(self, attr_list):
+        for attr in attr_list:
+            attr_type = attr.get_type().type2base()
+            text = (self._("%(type)s: %(value)s")
+                    % {"type": self._(attr_type), "value": attr.get_value()})
+            endnotes = self._cite_endnote(attr)
+            self.write_paragraph(text, endnotes)
+
+    def endnotes(self, obj):
+        self.inc_sources = True
+        parent_result = super().endnotes(obj)
+        self.inc_sources = False
+        return parent_result
+
+    def _cite_endnote(self, obj, prior=''):
+        if not self.inc_notes:
+            return ""
+        if not obj:
+            return prior
+        
+        txt = endnotes.cite_source(self.bibli, self.db, obj, self._locale)
+        if not txt:
+            return prior
+        if prior:
+            return self._('%(str1)s, %(str2)s') % {'str1':prior, 'str2':txt}
 
     def write_media_notes(self, media: Media):
         for _, handle in media.get_referenced_note_handles():
@@ -187,214 +231,10 @@ def _format_ref_text(ref, key, elocale):
 
     return ref_txt
 
-#------------------------------------------------------------------------
-#
-# DetDescendantOptions
-#
-#------------------------------------------------------------------------
-class DetailedDescendantIOptions(MenuReportOptions):
 
-    """
-    Defines options and provides handling interface.
-    """
-
-    def __init__(self, name, dbase):
-        MenuReportOptions.__init__(self, name, dbase)
-
-    def add_menu_options(self, menu):
-        """
-        Add options to the menu for the detailed descendant report.
-        """
-
-        # Report Options
-        category = _("Report Options")
-        add_option = partial(menu.add_option, category)
-
-        pid = PersonOption(_("Center Person"))
-        pid.set_help(_("The center person for the report"))
-        add_option("pid", pid)
-
-        stdoptions.add_name_format_option(menu, category)
-
-        stdoptions.add_private_data_option(menu, category)
-
-        numbering = EnumeratedListOption(_("Numbering system"), "Henry")
-        numbering.set_items([
-                ("Henry",      _("Henry numbering")),
-                ("d'Aboville", _("d'Aboville numbering")),
-                ("Record (Modified Register)",
-                               _("Record (Modified Register) numbering"))])
-        numbering.set_help(_("The numbering system to be used"))
-        add_option("numbering", numbering)
-
-        generations = NumberOption(_("Generations"), 10, 1, 100)
-        generations.set_help(
-            _("The number of generations to include in the report")
-            )
-        add_option("gen", generations)
-
-        pagebbg = BooleanOption(_("Page break between generations"), False)
-        pagebbg.set_help(
-                     _("Whether to start a new page after each generation."))
-        add_option("pagebbg", pagebbg)
-
-        pageben = BooleanOption(_("Page break before end notes"),False)
-        pageben.set_help(
-                     _("Whether to start a new page before the end notes."))
-        add_option("pageben", pageben)
-
-        stdoptions.add_localization_option(menu, category)
-
-        # Content
-
-        add_option = partial(menu.add_option, _("Content"))
-
-        usecall = BooleanOption(_("Use callname for common name"), False)
-        usecall.set_help(_("Whether to use the call name as the first name."))
-        add_option("usecall", usecall)
-
-        fulldates = BooleanOption(_("Use full dates instead of only the year"),
-                                  True)
-        fulldates.set_help(_("Whether to use full dates instead of just year."))
-        add_option("fulldates", fulldates)
-
-        listc = BooleanOption(_("List children"), True)
-        listc.set_help(_("Whether to list children."))
-        add_option("listc", listc)
-
-        computeage = BooleanOption(_("Compute death age"),True)
-        computeage.set_help(_("Whether to compute a person's age at death."))
-        add_option("computeage", computeage)
-
-        omitda = BooleanOption(_("Omit duplicate ancestors"), True)
-        omitda.set_help(_("Whether to omit duplicate ancestors."))
-        add_option("omitda", omitda)
-
-        verbose = BooleanOption(_("Use complete sentences"), True)
-        verbose.set_help(
-                 _("Whether to use complete sentences or succinct language."))
-        add_option("verbose", verbose)
-
-        desref = BooleanOption(_("Add descendant reference in child list"),
-                               True)
-        desref.set_help(
-                    _("Whether to add descendant references in child list."))
-        add_option("desref", desref)
-
-        category_name = _("Include")
-        add_option = partial(menu.add_option, _("Include"))
-
-        incnotes = BooleanOption(_("Include notes"), True)
-        incnotes.set_help(_("Whether to include notes."))
-        add_option("incnotes", incnotes)
-
-        inctodo = BooleanOption(_("Include TODO notes"), True)
-        inctodo.set_help(_("Whether to include TODO notes."))
-        add_option("inctodo", inctodo)
-
-        incattrs = BooleanOption(_("Include attributes"), False)
-        incattrs.set_help(_("Whether to include attributes."))
-        add_option("incattrs", incattrs)
-
-        incphotos = BooleanOption(_("Include Photo/Images from Gallery"), True)
-        incphotos.set_help(_("Whether to include images."))
-        add_option("incphotos", incphotos)
-
-        incnames = BooleanOption(_("Include alternative names"), False)
-        incnames.set_help(_("Whether to include other names."))
-        add_option("incnames", incnames)
-
-        incevents = BooleanOption(_("Include events"), False)
-        incevents.set_help(_("Whether to include events."))
-        add_option("incevents", incevents)
-
-        incaddresses = BooleanOption(_("Include addresses"), False)
-        incaddresses.set_help(_("Whether to include addresses."))
-        add_option("incaddresses", incaddresses)
-
-        incsources = BooleanOption(_("Include sources"), False)
-        incsources.set_help(_("Whether to include source references."))
-        add_option("incsources", incsources)
-
-        incsrcnotes = BooleanOption(_("Include sources notes"), False)
-        incsrcnotes.set_help(_("Whether to include source notes in the "
-            "Endnotes section. Only works if Include sources is selected."))
-        add_option("incsrcnotes", incsrcnotes)
-
-        incmates = BooleanOption(_("Include spouses"), False)
-        incmates.set_help(_("Whether to include detailed spouse information."))
-        add_option("incmates", incmates)
-
-        incmateref = BooleanOption(_("Include spouse reference"), False)
-        incmateref.set_help(_("Whether to include reference to spouse."))
-        add_option("incmateref", incmateref)
-
-        incssign = BooleanOption(_("Include sign of succession ('+')"
-                                   " in child-list"), True)
-        incssign.set_help(_("Whether to include a sign ('+') before the"
-                            " descendant number in the child-list to indicate"
-                            " a child has succession."))
-        add_option("incssign", incssign)
-
-        incpaths = BooleanOption(_("Include path to start-person"), False)
-        incpaths.set_help(_("Whether to include the path of descendancy "
-                            "from the start-person to each descendant."))
-        add_option("incpaths", incpaths)
-
-        # Missing information
-
-        add_option = partial(menu.add_option, _("Missing information"))
-
-        repplace = BooleanOption(_("Replace missing places with ______"), False)
-        repplace.set_help(_("Whether to replace missing Places with blanks."))
-        add_option("repplace", repplace)
-
-        repdate = BooleanOption(_("Replace missing dates with ______"), False)
-        repdate.set_help(_("Whether to replace missing Dates with blanks."))
-        add_option("repdate", repdate)
-
+class ImageDetDescendantOptions(DetDescendantOptions):
     def make_default_style(self, default_style):
-        """Make the default output style for the Detailed Ancestral Report"""
-        font = FontStyle()
-        font.set(face=FONT_SANS_SERIF, size=16, bold=1)
-        para = ParagraphStyle()
-        para.set_font(font)
-        para.set_header_level(1)
-        para.set_top_margin(0.25)
-        para.set_bottom_margin(0.25)
-        para.set_alignment(PARA_ALIGN_CENTER)
-        para.set_description(_('The style used for the title of the page.'))
-        default_style.add_paragraph_style("DDRI-Title", para)
-
-        font = FontStyle()
-        font.set(face=FONT_SANS_SERIF, size=14, italic=1)
-        para = ParagraphStyle()
-        para.set_font(font)
-        para.set_header_level(2)
-        para.set_top_margin(0.25)
-        para.set_bottom_margin(0.25)
-        para.set_description(_('The style used for the generation header.'))
-        default_style.add_paragraph_style("DDRI-Generation", para)
-
-        font = FontStyle()
-        font.set(face=FONT_SANS_SERIF, size=10, italic=0, bold=1)
-        para = ParagraphStyle()
-        para.set_font(font)
-        para.set_left_margin(1.5)   # in centimeters
-        para.set_top_margin(0.25)
-        para.set_bottom_margin(0.25)
-        para.set_description(_('The style used for the children list title.'))
-        default_style.add_paragraph_style("DDRI-ChildTitle", para)
-
-        font = FontStyle()
-        font.set(size=10)
-        para = ParagraphStyle()
-        para.set_font(font)
-        para.set(first_indent=-0.75, lmargin=2.25)
-        para.set_top_margin(0.125)
-        para.set_bottom_margin(0.125)
-        para.set_description(_('The style used for the children list.'))
-        default_style.add_paragraph_style("DDRI-ChildList", para)
+        super().make_default_style(default_style)
 
         font = FontStyle()
         font.set(face=FONT_SANS_SERIF, size=10, italic=0, bold=1)
@@ -478,4 +318,3 @@ class DetailedDescendantIOptions(MenuReportOptions):
         para.set_description(_('A style used for image captions.'))
         default_style.add_paragraph_style("DDRI-ImageCaptionCenter", para)
 
-        endnotes.add_endnote_styles(default_style)
