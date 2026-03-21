@@ -2,6 +2,7 @@ from abc import ABC
 from typing import Sequence
 
 from gramps.gen.lib import Media, MediaRef, Note, Source
+from gramps.gen.plug.docgen import TextDoc
 from gramps.gen.plug.report import endnotes, Bibliography, Report
 from gramps.gen.plug.report.utils import insert_image
 from gramps.gen.proxy.proxybase import ProxyDbBase
@@ -17,12 +18,15 @@ class MediaReportBase(Report, ABC):
     db: ProxyDbBase
     inc_notes: bool
     inc_srcnotes: bool
+    pgbrkenotes: bool
+    doc: TextDoc
 
     def write_report(self) -> None:
         self.inc_sources = False
         parent_result = super().write_report()
         self.inc_sources = True
-        # PLATYPUS line break if enabled
+        if self.pgbrkenotes:
+            self.doc.page_break()
         ReportMediaWriter(self).write_endnotes_with_media()
         return parent_result
 
