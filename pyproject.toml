@@ -4,7 +4,9 @@ version = "1.0.0"
 description = "Detailed Reports with images (Gramps)"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "gramps<7.0.0",
+]
 
 [dependency-groups]
 dev = [
