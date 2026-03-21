@@ -1,16 +1,19 @@
-flatpak:
- ~/.var/app/org.gramps_project.Gramps/data/gramps/gramps60/plugins/
+# Detailed Reports with images (Gramps)
 
-debian:
- ~/.local/share/gramps/gramps60/plugins
+This repository implements the
+* Detailed Ancestral Report with all images
+* Detailed Descendant Report with all images
+for Gramps v6.
 
-TODO übersetzungen - es liegen nur .mo-Dateien und nicht die Originale da.
+## Installation
 
-was braucht es zum Entwickeln?
-* 1 Gramps-Version im Hostsystem (6.0)
-* unter Debian: Wohin muss das installiert werden (irgendwas mit local/share/...)
-  -> siehe oben.
-* virtualenv mit derselben Version + gramps-lib
+Gramps (version 6) and `make` is required. You can install the plugins
+via `make install-...`. Installing into debian and flatpak based systems
+is supported.
 
-TODO
-* die Originalversion von jpschewe holen und Diffs aufbauen 
+## Authors
+
+The code is largely based on the great work of Jon Schewe who implemented
+the detailed descendant report. It has been adapted to derive from the
+original Gramps reports of ancestors / descendants, and abstracted to
+reuse it for the ancestral report, too.

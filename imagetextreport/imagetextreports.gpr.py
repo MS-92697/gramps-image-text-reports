@@ -9,35 +9,31 @@ register(
     gramps_target_version="6.0",
     status=STABLE,
     fname="detdescendantreporti.py",
-    authors=["Jon Schewe"],
-    authors_email=["jpschewe@mtu.net"],
+    authors=["Jon Schewe", "Florian Schieder"],
+    authors_email=["jpschewe@mtu.net", "florian.schieder@web.de"],
     category=CATEGORY_TEXT,
     reportclass="ImageDetDescendantReport",
     optionclass="ImageDetDescendantOptions",
     report_modes=[REPORT_MODE_GUI, REPORT_MODE_BKI, REPORT_MODE_CLI],
     require_active=True,
-    help_url="Addon:Detailed_Descendant_Report_With_All_Images",
 )
 
 register(
     REPORT,
     id="det_ancestral_report_i",
-    # TODO dafür wird's keine Übersetzungen geben. siehe README
     name=_("Detailed Ancestral Report With All Images"),
     description=_(
         "Produces a detailed ancestral report with all images and optional todo list."
     ),
     version = '1.0.0',
     gramps_target_version="6.0",
-    # TODO erstmal nein, aber was ist 'UNSTABLE'
     status=STABLE,
     fname="detancestralreporti.py",
-    authors=[],  # TODO
-    authors_email=[],  # TODO
+    authors=["Florian Schieder"],
+    authors_email=["florian.schieder@web.de"],
     category=CATEGORY_TEXT,
     reportclass="ImageDetAncestorReport",
     optionclass="ImageDetAncestorReportOptions",
     report_modes=[REPORT_MODE_GUI, REPORT_MODE_BKI, REPORT_MODE_CLI],
     require_active=True,
-    help_url="Addon:Detailed_Ancestral_Report_With_All_Images",  # TODO?
 )
