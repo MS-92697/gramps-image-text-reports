@@ -1,11 +1,10 @@
+from baseoptions import add_image_report_options
 from gramps.gen.const import GRAMPS_LOCALE as glocale
 from gramps.gen.plug.docgen import StyleSheet
 from gramps.plugins.textreport.detancestralreport import (
-    DetAncestorReport,
     DetAncestorOptions,
+    DetAncestorReport,
 )
-
-from baseoptions import add_image_report_options
 from reportmediawriter import MediaReportBase
 
 _ = glocale.translation.gettext  # pyright: ignore[reportOptionalMemberAccess]

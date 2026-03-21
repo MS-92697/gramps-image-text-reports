@@ -1,13 +1,13 @@
 from gramps.gen.const import GRAMPS_LOCALE as glocale
 from gramps.gen.plug.docgen import (
-    FontStyle,
-    ParagraphStyle,
-    StyleSheet,
-    TableStyle,
-    TableCellStyle,
     FONT_SANS_SERIF,
     FONT_SERIF,
     PARA_ALIGN_CENTER,
+    FontStyle,
+    ParagraphStyle,
+    StyleSheet,
+    TableCellStyle,
+    TableStyle,
 )
 from gramps.gen.plug.report import utils as ReportUtils
 
@@ -65,7 +65,7 @@ def _add_more_header_option(default_style: StyleSheet) -> None:
     para.set_top_margin(0.25)
     para.set_bottom_margin(0.25)
     para.set_description(
-        _("The style used for the More About header and for headers of mates.")
+        _("The style used for the More About header and for headers of mates."),
     )
     default_style.add_paragraph_style("DDRI-MoreHeader", para)
 

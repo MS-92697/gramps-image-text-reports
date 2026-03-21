@@ -1,12 +1,13 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Self, Sequence
+from typing import Self
 
-from gramps.gen.proxy.proxybase import ProxyDbBase
 from gramps.gen.lib import Media, MediaRef
+from gramps.gen.proxy.proxybase import ProxyDbBase
 
 
 class ReportMediaIterator:
-    __slots__ = ["_media_list", "_current_index", "_database"]
+    __slots__ = ["_current_index", "_database", "_media_list"]
 
     def __init__(
         self,

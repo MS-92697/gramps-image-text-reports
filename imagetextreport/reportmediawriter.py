@@ -1,13 +1,12 @@
 from abc import ABC
-from typing import Sequence
+from collections.abc import Sequence
 
 from gramps.gen.lib import Media, MediaRef, Note, Source
 from gramps.gen.plug.docgen import TextDoc
-from gramps.gen.plug.report import endnotes, Bibliography, Report
+from gramps.gen.plug.report import Bibliography, Report, endnotes
 from gramps.gen.plug.report.utils import insert_image
 from gramps.gen.proxy.proxybase import ProxyDbBase
 from gramps.gen.utils.grampslocale import GrampsLocale
-
 from reportmedia import ReportMedia, ReportMediaItem
 
 
@@ -84,7 +83,7 @@ class ReportMediaWriter[TReport: MediaReportBase]:
         self._report.doc.end_paragraph()
         self._report.doc.page_break()
 
-    def do_attributes(self, attr_list):
+    def do_attributes(self, attr_list) -> None:
         for attr in attr_list:
             attr_type = attr.get_type().type2base()
             text = self._report._("%(type)s: %(value)s") % {
@@ -112,7 +111,7 @@ class ReportMediaWriter[TReport: MediaReportBase]:
             return self._report._("%(str1)s, %(str2)s") % {"str1": prior, "str2": txt}
         return ""
 
-    def write_media_notes(self, media: Media):
+    def write_media_notes(self, media: Media) -> None:
         for _, handle in media.get_referenced_note_handles():
             note: Note = self._report.database.get_note_from_handle(handle)
             text = note.get_styledtext()
@@ -145,7 +144,7 @@ class ReportMediaWriter[TReport: MediaReportBase]:
             if self._report.addimages:
                 self.write_images(ref_plist)
 
-    def _write_endnote_refs(self, key, ref):
+    def _write_endnote_refs(self, key, ref) -> None:
         self._report.doc.start_paragraph(
             "Endnotes-Ref",
             self._report._locale.translation.gettext("%s:") % key,
@@ -156,7 +155,7 @@ class ReportMediaWriter[TReport: MediaReportBase]:
         )
         self._report.doc.end_paragraph()
 
-    def _write_endnote_source_notes(self, source: Source):
+    def _write_endnote_source_notes(self, source: Source) -> None:
         if self._report.inc_srcnotes:
             endnotes._print_notes(
                 source,
@@ -171,7 +170,7 @@ class ReportMediaWriter[TReport: MediaReportBase]:
 
     def _write_endnotes_source(self, cindex: int, citation) -> Source:
         source = self._report.database.get_source_from_handle(
-            citation.get_source_handle()
+            citation.get_source_handle(),
         )
 
         self._report.doc.start_paragraph("Endnotes-Source", "%d." % cindex)
@@ -182,10 +181,10 @@ class ReportMediaWriter[TReport: MediaReportBase]:
         self._report.doc.end_paragraph()
         return source
 
-    def _write_endnotes_header(self):
+    def _write_endnotes_header(self) -> None:
         self._report.doc.start_paragraph("Endnotes-Header")
         self._report.doc.write_text(
-            self._report._locale.translation.gettext("Endnotes")
+            self._report._locale.translation.gettext("Endnotes"),
         )
         self._report.doc.end_paragraph()
 
@@ -219,7 +218,7 @@ def _format_source_text(source, elocale):
         if src_txt:
             # Translators: needed for Arabic, ignore otherwise
             src_txt += trans_text(", ")
-        src_txt += "(%s)" % source.get_abbreviation()
+        src_txt += f"({source.get_abbreviation()})"
 
     return src_txt
 
@@ -236,7 +235,7 @@ def _format_ref_text(ref, key, elocale):
         datepresent = True
     if datepresent:
         if ref.get_page():
-            ref_txt = "%s - %s" % (ref.get_page(), elocale.get_date(date))
+            ref_txt = f"{ref.get_page()} - {elocale.get_date(date)}"
         else:
             ref_txt = elocale.get_date(date)
     else:
