@@ -30,16 +30,21 @@ class ReportMediaIterator:
             raise StopIteration
 
         self._current_index += 1
-        return (curr
-                if (curr := self._resolve_at_index(self._current_index - 1))
-                else self.__next__())
+        return (
+            curr
+            if (curr := self._resolve_at_index(self._current_index - 1))
+            else self.__next__()
+        )
 
     def _resolve_at_index(self, index: int) -> Item | None:
-        return (self.Item(ref=ref, media=val)
-                if (ref := self._media_list[index])
-                and (val := self._resolve_reference(ref))
-                and (mime := val.get_mime_type()) and mime.startswith("image/")
-                else None)
+        return (
+            self.Item(ref=ref, media=val)
+            if (ref := self._media_list[index])
+            and (val := self._resolve_reference(ref))
+            and (mime := val.get_mime_type())
+            and mime.startswith("image/")
+            else None
+        )
 
     def _resolve_reference(self, ref) -> Media | None:
         handle = ref.get_reference_handle()
@@ -54,5 +59,6 @@ class ReportMedia(list):
     ) -> None:
         iterator = ReportMediaIterator(database, media_list)
         super().__init__(iterator)
+
 
 ReportMediaItem = ReportMediaIterator.Item

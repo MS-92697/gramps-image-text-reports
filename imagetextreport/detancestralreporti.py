@@ -8,7 +8,7 @@ from gramps.plugins.textreport.detancestralreport import (
 from baseoptions import add_image_report_options
 from reportmediawriter import MediaReportBase
 
-_ = glocale.translation.gettext # pyright: ignore[reportOptionalMemberAccess]
+_ = glocale.translation.gettext  # pyright: ignore[reportOptionalMemberAccess]
 
 
 class ImageDetAncestorReport(MediaReportBase, DetAncestorReport):

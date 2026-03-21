@@ -17,3 +17,8 @@ The code is largely based on the great work of Jon Schewe who implemented
 the detailed descendant report. It has been adapted to derive from the
 original Gramps reports of ancestors / descendants, and abstracted to
 reuse it for the ancestral report, too.
+
+## Development
+
+It's recommended to set up a virtual environment with `python3 -m venv .venv/`
+and install `uv` there within the activated environment: `pip install uv`.

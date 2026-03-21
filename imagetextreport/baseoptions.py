@@ -1,11 +1,17 @@
 from gramps.gen.const import GRAMPS_LOCALE as glocale
-from gramps.gen.plug.docgen import (FontStyle, ParagraphStyle, StyleSheet,
-                                    TableStyle, TableCellStyle,
-                                    FONT_SANS_SERIF, FONT_SERIF,
-                                    PARA_ALIGN_CENTER)
+from gramps.gen.plug.docgen import (
+    FontStyle,
+    ParagraphStyle,
+    StyleSheet,
+    TableStyle,
+    TableCellStyle,
+    FONT_SANS_SERIF,
+    FONT_SERIF,
+    PARA_ALIGN_CENTER,
+)
 from gramps.gen.plug.report import utils as ReportUtils
 
-_ = glocale.translation.gettext # pyright: ignore[reportOptionalMemberAccess]
+_ = glocale.translation.gettext  # pyright: ignore[reportOptionalMemberAccess]
 
 
 def add_image_report_options(default_style: StyleSheet) -> None:
@@ -37,7 +43,7 @@ def _add_entry_option(default_style: StyleSheet) -> None:
     para.set(lmargin=1.5)
     para.set_top_margin(0.25)
     para.set_bottom_margin(0.25)
-    para.set_description(_('The basic style used for the text display.'))
+    para.set_description(_("The basic style used for the text display."))
     default_style.add_paragraph_style("DDRI-Entry", para)
 
 
@@ -46,7 +52,7 @@ def _add_first_entry_option(default_style: StyleSheet) -> None:
     para.set(first_indent=-1.5, lmargin=1.5)
     para.set_top_margin(0.25)
     para.set_bottom_margin(0.25)
-    para.set_description(_('The style used for the first personal entry.'))
+    para.set_description(_("The style used for the first personal entry."))
     default_style.add_paragraph_style("DDRI-First-Entry", para)
 
 
@@ -58,10 +64,10 @@ def _add_more_header_option(default_style: StyleSheet) -> None:
     para.set(first_indent=0.0, lmargin=1.5)
     para.set_top_margin(0.25)
     para.set_bottom_margin(0.25)
-    para.set_description(_('The style used for the More About header and '
-        'for headers of mates.'))
+    para.set_description(
+        _("The style used for the More About header and for headers of mates.")
+    )
     default_style.add_paragraph_style("DDRI-MoreHeader", para)
-
 
 
 def _add_more_details_option(default_style: StyleSheet) -> None:
@@ -72,7 +78,7 @@ def _add_more_details_option(default_style: StyleSheet) -> None:
     para.set(first_indent=0.0, lmargin=1.5)
     para.set_top_margin(0.25)
     para.set_bottom_margin(0.25)
-    para.set_description(_('The style used for additional detail data.'))
+    para.set_description(_("The style used for additional detail data."))
     default_style.add_paragraph_style("DDRI-MoreDetails", para)
 
 
@@ -120,5 +126,5 @@ def _add_image_caption_center_option(default_style: StyleSheet) -> None:
     para.set_font(font)
     para.set_top_margin(ReportUtils.pt2cm(3))
     para.set_bottom_margin(ReportUtils.pt2cm(3))
-    para.set_description(_('A style used for image captions.'))
+    para.set_description(_("A style used for image captions."))
     default_style.add_paragraph_style("DDRI-ImageCaptionCenter", para)

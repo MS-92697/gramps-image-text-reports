@@ -41,25 +41,25 @@ class ReportMediaWriter[TReport: MediaReportBase]:
         self._report.doc.end_paragraph()
 
     def write_images(self, media_list: Sequence[MediaRef | None]) -> None:
-        if (report_media := ReportMedia(self._report.database, media_list)):
+        if report_media := ReportMedia(self._report.database, media_list):
             self._start_image_table()
             for item in report_media:
                 self._write_report_media_item(item)
             self._end_image_table()
 
     def _start_image_table(self) -> None:
-        self._report.doc.start_table("images","DDRI-GalleryTable")
+        self._report.doc.start_table("images", "DDRI-GalleryTable")
         self._report.doc.start_row()
         self._report.doc.start_cell("DDRI-TableHead", 1)
-        self.write_paragraph(self._report._('Images'), 'DDRI-TableTitle')
+        self.write_paragraph(self._report._("Images"), "DDRI-TableTitle")
         self._report.doc.end_cell()
         self._report.doc.end_row()
 
     def _write_report_media_item(self, item: ReportMediaItem) -> None:
         description = item.media.get_description()
         self._report.doc.start_row()
-        self._report.doc.start_cell('DDRI-NormalCell')
-        self.write_paragraph(description, 'DDRI-ImageCaptionCenter')
+        self._report.doc.start_cell("DDRI-NormalCell")
+        self.write_paragraph(description, "DDRI-ImageCaptionCenter")
         self._insert_image(item)
         self.do_attributes(item.media.get_attribute_list())
         self.do_attributes(item.ref.get_attribute_list())
@@ -73,26 +73,28 @@ class ReportMediaWriter[TReport: MediaReportBase]:
             self._report.doc,
             item.ref,
             self._report._user,
-            align='single',
+            align="single",
             w_cm=17.0,
             h_cm=19.0,
         )
 
     def _end_image_table(self) -> None:
         self._report.doc.end_table()
-        self._report.doc.start_paragraph('DDRI-NoteHeader')
+        self._report.doc.start_paragraph("DDRI-NoteHeader")
         self._report.doc.end_paragraph()
         self._report.doc.page_break()
 
     def do_attributes(self, attr_list):
         for attr in attr_list:
             attr_type = attr.get_type().type2base()
-            text = (self._report._("%(type)s: %(value)s")
-                    % {"type": self._report._(attr_type), "value": attr.get_value()})
+            text = self._report._("%(type)s: %(value)s") % {
+                "type": self._report._(attr_type),
+                "value": attr.get_value(),
+            }
             endnotes = self._cite_endnote(attr)
             self.write_paragraph(text, endnotes)
 
-    def _cite_endnote(self, obj, prior='') -> str:
+    def _cite_endnote(self, obj, prior="") -> str:
         if not self._report.inc_notes:
             return ""
         if not obj:
@@ -107,17 +109,14 @@ class ReportMediaWriter[TReport: MediaReportBase]:
         if not txt:
             return prior
         if prior:
-            return (self._report._('%(str1)s, %(str2)s')
-                    % {"str1": prior, "str2": txt})
+            return self._report._("%(str1)s, %(str2)s") % {"str1": prior, "str2": txt}
         return ""
 
     def write_media_notes(self, media: Media):
         for _, handle in media.get_referenced_note_handles():
             note: Note = self._report.database.get_note_from_handle(handle)
             text = note.get_styledtext()
-            self._report.doc.write_styled_note(
-                text, 1, "DDRI-MoreDetails", True, True
-            )
+            self._report.doc.write_styled_note(text, 1, "DDRI-MoreDetails", True, True)
 
     def write_endnotes_with_media(self) -> None:
         if self._report.bibli.get_citation_count() == 0:
@@ -139,7 +138,7 @@ class ReportMediaWriter[TReport: MediaReportBase]:
                 ref,
                 self._report.database,
                 self._report.doc,
-                'Endnotes-Ref-Notes',
+                "Endnotes-Ref-Notes",
                 links=False,
             )
             ref_plist = ref.get_media_list()
@@ -148,8 +147,8 @@ class ReportMediaWriter[TReport: MediaReportBase]:
 
     def _write_endnote_refs(self, key, ref):
         self._report.doc.start_paragraph(
-            'Endnotes-Ref',
-            self._report._locale.translation.gettext('%s:') % key,
+            "Endnotes-Ref",
+            self._report._locale.translation.gettext("%s:") % key,
         )
         self._report.doc.write_text(
             _format_ref_text(ref, key, self._report._locale),
@@ -163,7 +162,7 @@ class ReportMediaWriter[TReport: MediaReportBase]:
                 source,
                 self._report.database,
                 self._report.doc,
-                'Endnotes-Source-Notes',
+                "Endnotes-Source-Notes",
                 links=False,
             )
             citation_plist = source.get_media_list()
@@ -175,7 +174,7 @@ class ReportMediaWriter[TReport: MediaReportBase]:
             citation.get_source_handle()
         )
 
-        self._report.doc.start_paragraph('Endnotes-Source', "%d." % cindex)
+        self._report.doc.start_paragraph("Endnotes-Source", "%d." % cindex)
         self._report.doc.write_text(
             _format_source_text(source, self._report._locale),
             links=False,
@@ -184,9 +183,9 @@ class ReportMediaWriter[TReport: MediaReportBase]:
         return source
 
     def _write_endnotes_header(self):
-        self._report.doc.start_paragraph('Endnotes-Header')
+        self._report.doc.start_paragraph("Endnotes-Header")
         self._report.doc.write_text(
-            self._report._locale.translation.gettext('Endnotes')
+            self._report._locale.translation.gettext("Endnotes")
         )
         self._report.doc.end_paragraph()
 

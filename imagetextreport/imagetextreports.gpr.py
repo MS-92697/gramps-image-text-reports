@@ -5,7 +5,7 @@ register(
     description=_(
         "Produces a detailed descendant report with all images and optional todo list."
     ),
-    version = '1.0.16',
+    version="1.0.16",
     gramps_target_version="6.0",
     status=STABLE,
     fname="detdescendantreporti.py",
@@ -25,7 +25,7 @@ register(
     description=_(
         "Produces a detailed ancestral report with all images and optional todo list."
     ),
-    version = '1.0.0',
+    version="1.0.0",
     gramps_target_version="6.0",
     status=STABLE,
     fname="detancestralreporti.py",

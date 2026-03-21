@@ -9,7 +9,7 @@ from gramps.plugins.textreport.detdescendantreport import (
 from baseoptions import add_image_report_options
 from reportmediawriter import MediaReportBase
 
-_ = glocale.translation.gettext # pyright: ignore[reportOptionalMemberAccess]
+_ = glocale.translation.gettext  # pyright: ignore[reportOptionalMemberAccess]
 
 
 class ImageDetDescendantReport(MediaReportBase, DetDescendantReport):
@@ -24,4 +24,3 @@ class ImageDetDescendantOptions(DetDescendantOptions):
     def make_default_style(self, default_style: StyleSheet) -> None:
         super().make_default_style(default_style)
         add_image_report_options(default_style)
-

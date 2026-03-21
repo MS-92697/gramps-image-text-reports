@@ -1,0 +1,24 @@
+[project]
+name = "gramps-image-text-reports"
+version = "1.0.0"
+description = "Detailed Reports with images (Gramps)"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.7",
+]
+
+[tool.ruff]
+exclude = [
+    # *.gpr.py files are somewhat eval()ed at runtime or something like that,
+    # that's why some some constants (REPORT_MODE_GUI) or functions (register())
+    # are not defined.
+    # it's a very weird style to implicitly assume predefined symbols but... ok.
+    "./**/*.gpr.py",
+]
+
+[tool.ruff.lint]
+select = ["ALL"]
