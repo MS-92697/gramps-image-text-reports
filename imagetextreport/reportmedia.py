@@ -1,17 +1,23 @@
 from dataclasses import dataclass
+from typing import Self, Sequence
 
+from gramps.gen.proxy.proxybase import ProxyDbBase
 from gramps.gen.lib import Media, MediaRef
 
 
 class ReportMediaIterator:
     __slots__ = ["_media_list", "_current_index", "_database"]
 
-    def __init__(self, database, media_list):
+    def __init__(
+        self,
+        database: ProxyDbBase,
+        media_list: Sequence[MediaRef | None],
+    ) -> None:
         self._database = database
         self._media_list = media_list
         self._current_index = 0
 
-    def __iter__(self):
+    def __iter__(self) -> Self:
         return self
 
     @dataclass(frozen=True, slots=True)
@@ -31,12 +37,22 @@ class ReportMediaIterator:
     def _resolve_at_index(self, index: int) -> Item | None:
         return (self.Item(ref=ref, media=val)
                 if (ref := self._media_list[index])
-                and (val := self._database.get_media_from_handle(ref.get_reference_handle()))
+                and (val := self._resolve_reference(ref))
                 and (mime := val.get_mime_type()) and mime.startswith("image/")
                 else None)
 
+    def _resolve_reference(self, ref) -> Media | None:
+        handle = ref.get_reference_handle()
+        return self._database.get_media_from_handle(handle)
+
 
 class ReportMedia(list):
-    def __init__(self, database, media_list):
+    def __init__(
+        self,
+        database: ProxyDbBase,
+        media_list: Sequence[MediaRef | None],
+    ) -> None:
         iterator = ReportMediaIterator(database, media_list)
         super().__init__(iterator)
+
+ReportMediaItem = ReportMediaIterator.Item

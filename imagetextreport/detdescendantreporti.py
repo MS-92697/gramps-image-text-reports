@@ -1,28 +1,19 @@
 from gramps.gen.const import GRAMPS_LOCALE as glocale
+from gramps.gen.plug.docgen import StyleSheet
 
 from gramps.plugins.textreport.detdescendantreport import (
     DetDescendantReport,
     DetDescendantOptions,
 )
 
-from base import ImageTextReportBase
 from baseoptions import add_image_report_options
-from reportmediawriter import ReportMediaWriter
+from reportmediawriter import MediaReportBase
 
 _ = glocale.translation.gettext # pyright: ignore[reportOptionalMemberAccess]
 
 
-class ImageDetDescendantReport(ImageTextReportBase, DetDescendantReport):
-    def write_report(self):
-        # PLATYPUS check whether this worked and if yes, describe why.
-        # same goes for the other funny override down there.
-        self.inc_sources = False
-        parent_result = super().write_report()
-        self.inc_sources = True
-        ReportMediaWriter(self).write_endnotes_with_media()
-        return parent_result
-
-    def endnotes(self, obj):
+class ImageDetDescendantReport(MediaReportBase, DetDescendantReport):
+    def endnotes(self, obj) -> str:
         self.inc_sources = True
         parent_result = super().endnotes(obj)
         self.inc_sources = False
@@ -30,7 +21,7 @@ class ImageDetDescendantReport(ImageTextReportBase, DetDescendantReport):
 
 
 class ImageDetDescendantOptions(DetDescendantOptions):
-    def make_default_style(self, default_style):
+    def make_default_style(self, default_style: StyleSheet) -> None:
         super().make_default_style(default_style)
         add_image_report_options(default_style)
 
