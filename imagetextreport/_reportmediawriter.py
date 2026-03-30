@@ -57,7 +57,9 @@ class ReportMediaWriter[TReport: MediaReportBase]:
             self._end_image_table()
 
     def _start_image_table(self) -> None:
-        self._report.doc.start_table("images", "DDRI-GalleryTable")
+        self.i = 0
+        self._report.doc.start_table(f"images-{self.i}", "DDRI-GalleryTable")
+        self.i += 1
         self._report.doc.start_row()
         self._report.doc.start_cell("DDRI-TableHead", 1)
         self.write_paragraph(self._report._("Images"), "DDRI-TableTitle")
@@ -70,11 +72,23 @@ class ReportMediaWriter[TReport: MediaReportBase]:
         self._report.doc.start_cell("DDRI-NormalCell")
         self.write_paragraph(description, "DDRI-ImageCaptionCenter")
         self._insert_image(item)
+        self._insert_break_after_cell()
         self.do_attributes(item.media.get_attribute_list())
         self.do_attributes(item.ref.get_attribute_list())
+        self._insert_break_after_cell()
         self.write_media_notes(item.media)
         self._report.doc.end_cell()
         self._report.doc.end_row()
+
+    def _insert_break_after_cell(self) -> None:
+        self._report.doc.end_cell()
+        self._report.doc.end_row()
+        self._report.doc.end_table()
+        self._report.doc.page_break()
+        self._report.doc.start_table(f"images-{self.i}", "DDRI-GalleryTable")
+        self.i += 1
+        self._report.doc.start_row()
+        self._report.doc.start_cell("DDRI-NormalCell")
 
     def _insert_image(self, item: ReportMediaItem) -> None:
         insert_image(
