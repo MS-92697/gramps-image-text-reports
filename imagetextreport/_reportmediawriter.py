@@ -51,52 +51,22 @@ class ReportMediaWriter[TReport: MediaReportBase]:
 
     def write_images(self, media_list: Sequence[MediaRef | None]) -> None:
         if report_media := ReportMedia(self._report.database, media_list):
-            self.write_paragraph(self._report._("Images"), "DDRI-TableTitle")  # TODO
+            self.write_paragraph(self._report._("Images"), "DDRI-TableTitle")
             for item in report_media:
                 self._write_report_media_item(item)
-            # self._end_image_table()
-            # WUFF was macht das denn hier? das ist ja maximal sinnlos?
-            self._report.doc.start_paragraph("DDRI-NoteHeader")
-            self._report.doc.end_paragraph()
             self._report.doc.page_break()
-
-    def _start_image_table(self) -> None:
-        # self.i = 0
-        # self._report.doc.start_table(f"images-{self.i}", "DDRI-GalleryTable")
-        # self.i += 1
-        # self._report.doc.start_row()
-        # self._report.doc.start_cell("DDRI-TableHead", 1)
-        # WAFF
-        self.write_paragraph(self._report._("Images"), "DDRI-TableTitle")
-        # WUFF
-        # self._report.doc.end_cell()
-        # self._report.doc.end_row()
 
     def _write_report_media_item(self, item: ReportMediaItem) -> None:
         description = item.media.get_description()
-        # self._report.doc.start_row()
-        # self._report.doc.start_cell("DDRI-NormalCell")
         self.write_paragraph(description, "DDRI-ImageCaptionCenter")
         self._insert_image(item)
-        # self._insert_break_after_cell()
+        self._report.doc.page_break()
         self.do_attributes(item.media.get_attribute_list())
         self.do_attributes(item.ref.get_attribute_list())
-        # self._insert_break_after_cell()
         self.write_media_notes(item.media)
-        # self._report.doc.end_cell()
-        # self._report.doc.end_row()
-
-    def _insert_break_after_cell(self) -> None:
-        self._report.doc.end_cell()
-        self._report.doc.end_row()
-        self._report.doc.end_table()
-        self._report.doc.page_break()
-        self._report.doc.start_table(f"images-{self.i}", "DDRI-GalleryTable")
-        self.i += 1
-        self._report.doc.start_row()
-        self._report.doc.start_cell("DDRI-NormalCell")
 
     def _insert_image(self, item: ReportMediaItem) -> None:
+        # TODO "kein Umlauf"
         insert_image(
             self._report.database,
             self._report.doc,
