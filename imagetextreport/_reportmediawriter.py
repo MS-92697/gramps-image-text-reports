@@ -51,7 +51,7 @@ class ReportMediaWriter[TReport: MediaReportBase]:
 
     def write_images(self, media_list: Sequence[MediaRef | None]) -> None:
         if report_media := ReportMedia(self._report.database, media_list):
-            self.write_paragraph(self._report._("Images"), "PLATYPUS")  # TODO
+            self.write_paragraph(self._report._("Images"), "DDRI-TableTitle")  # TODO
             for item in report_media:
                 self._write_report_media_item(item)
             # self._end_image_table()
