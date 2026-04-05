@@ -51,32 +51,35 @@ class ReportMediaWriter[TReport: MediaReportBase]:
 
     def write_images(self, media_list: Sequence[MediaRef | None]) -> None:
         if report_media := ReportMedia(self._report.database, media_list):
-            self._start_image_table()
+            self.write_paragraph(self._report._("Images"), "DDRI-TableTitle")
             for item in report_media:
                 self._write_report_media_item(item)
-            self._end_image_table()
-
-    def _start_image_table(self) -> None:
-        self._report.doc.start_table("images", "DDRI-GalleryTable")
-        self._report.doc.start_row()
-        self._report.doc.start_cell("DDRI-TableHead", 1)
-        self.write_paragraph(self._report._("Images"), "DDRI-TableTitle")
-        self._report.doc.end_cell()
-        self._report.doc.end_row()
+            self._report.doc.page_break()
 
     def _write_report_media_item(self, item: ReportMediaItem) -> None:
         description = item.media.get_description()
-        self._report.doc.start_row()
-        self._report.doc.start_cell("DDRI-NormalCell")
         self.write_paragraph(description, "DDRI-ImageCaptionCenter")
         self._insert_image(item)
+        # TODO it may be worth discussing whether this page break is a good idea.
+        # Problems:
+        # (1) large images with large preceding text paragraphs result in an
+        #     intermediate empty page.
+        # (2) very small images result in much space
+        # (3) less text which COULD be rendered beneath the image causes
+        #     unnecessary interruption in reading flow.
+        # Possible solutions:
+        # * keep as is
+        # * mitigation for 1 (i.e. ugly hack): make large image smaller
+        # * new configuration item (or bind to existing one if fitting)
+        # * stateful approach (image introspection)
+        # * configure at image / endnote instance level
+        self._report.doc.page_break()
         self.do_attributes(item.media.get_attribute_list())
         self.do_attributes(item.ref.get_attribute_list())
         self.write_media_notes(item.media)
-        self._report.doc.end_cell()
-        self._report.doc.end_row()
 
     def _insert_image(self, item: ReportMediaItem) -> None:
+        # TODO "kein Umlauf"
         insert_image(
             self._report.database,
             self._report.doc,
