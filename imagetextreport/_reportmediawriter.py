@@ -60,6 +60,19 @@ class ReportMediaWriter[TReport: MediaReportBase]:
         description = item.media.get_description()
         self.write_paragraph(description, "DDRI-ImageCaptionCenter")
         self._insert_image(item)
+        # TODO it may be worth discussing whether this page break is a good idea.
+        # Problems:
+        # (1) large images with large preceding text paragraphs result in an
+        #     intermediate empty page.
+        # (2) very small images result in much space
+        # (3) less text which COULD be rendered beneath the image causes
+        #     unnecessary interruption in reading flow.
+        # Possible solutions:
+        # * keep as is
+        # * mitigation for 1 (i.e. ugly hack): make large image smaller
+        # * new configuration item (or bind to existing one if fitting)
+        # * stateful approach (image introspection)
+        # * configure at image / endnote instance level
         self._report.doc.page_break()
         self.do_attributes(item.media.get_attribute_list())
         self.do_attributes(item.ref.get_attribute_list())
