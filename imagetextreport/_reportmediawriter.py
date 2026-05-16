@@ -143,10 +143,9 @@ class ReportMediaWriter[TReport: MediaReportBase]:
         self._write_endnotes_header()
 
         for cindex, citation in enumerate(self._report.bibli.get_citation_list()):
-            source = self._write_endnotes_source(cindex, citation)
-            self._write_endnote_source_notes(source)
-
             for key, ref in citation.get_ref_list():
+                source = self._write_endnotes_source(cindex, citation)
+                self._write_endnote_source_notes(source)
                 self._write_endnote_refs(key, ref)
                 self._write_endnote_ref_notes(ref)
 
